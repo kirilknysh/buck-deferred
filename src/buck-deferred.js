@@ -1,18 +1,35 @@
 ;(function (global, $) {
-    var STATE = {
+    var 
+    /**
+     * Enum Promise state.
+     * @enum {String}
+    */
+    STATE = {
         PENDING: 'pending',
         RESOLVED: 'resolved',
         REJECTED: 'rejected'
     };
 
+    /**
+     * Creates a new Promise.
+     * @class
+     */
     function Promise () {
         this.successCallbacks = [];
         this.failCallbacks = [];
         this.progressCallbacks = [];
 
+        /**
+         * @private
+         */
         this._state = STATE.PENDING;
     }
 
+    /**
+     * Return the current state of the Promise object.
+     * @function state
+     * @returns {STATE} State of the promise.
+     */
     Promise.prototype.state = function () {
         return this._state;
     };
@@ -23,6 +40,12 @@
         this.progress(fnProgress);
     };
 
+    /**
+     * Add fail callback(-s).
+     * @function fail
+     * @param {Function|...Functions} 
+     * @returns {Promise} The current Promise.
+     */
     Promise.prototype.fail = function (/* fns */) {
         var iterator = 0;
 
@@ -31,8 +54,16 @@
                 this.failCallbacks.push(arguments[iterator]);
             }
         }
+
+        return this;
     };
 
+    /**
+     * Add always (success + fail) callback(-s).
+     * @function always
+     * @param {Function|...Functions} 
+     * @returns {Promise} The current Promise.
+     */
     Promise.prototype.always = function (/* fns */) {
         var iterator = 0;
 
@@ -42,8 +73,16 @@
                 this.failCallbacks.push(arguments[iterator]);
             }
         }
+
+        return this;
     };
 
+    /**
+     * Add success callback(-s).
+     * @function done
+     * @param {Function|...Functions} 
+     * @returns {Promise} The current Promise.
+     */
     Promise.prototype.done = function (/* fns */) {
         var iterator = 0;
 
@@ -52,8 +91,16 @@
                 this.successCallbacks.push(arguments[iterator]);
             }
         }
+
+        return this;
     };
 
+    /**
+     * Add progress callback(-s).
+     * @function progress
+     * @param {Function|...Functions} 
+     * @returns {Promise} The current Promise.
+     */
     Promise.prototype.progress = function (/* fns */) {
         var iterator = 0;
 
@@ -62,6 +109,8 @@
                 this.progressCallbacks.push(arguments[iterator]);
             }
         }
+
+        return this;
     };
 
     function sequentialCalls (context, args, fns) {
