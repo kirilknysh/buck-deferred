@@ -5,7 +5,7 @@
         REJECTED: 'rejected'
     };
 
-    function Promise() {
+    function Promise () {
         this.successCallbacks = [];
         this.failCallbacks = [];
         this.progressCallbacks = [];
@@ -64,13 +64,27 @@
         }
     };
 
+    function sequentialCalls (context, args, fns) {
+        var iterator = 0;
+
+        for (; iterator < fns.length; iterator++) {
+            fns[iterator].apply(context, args);
+        }
+
+        //clear fns ??? 
+    }
+
 
     $.Deferred = function (func) {
-        this.promise = new Promise();
+        this._promise = new Promise();
 
         if (typeof func === 'function') {
             func.call(this, this);
         }
+    };
+
+    $.Deferred.prototype.state = function () {
+        return this._promise.state();
     };
 
     $.Deferred.prototype.then = function () {
@@ -78,60 +92,73 @@
     };
 
     $.Deferred.prototype.fail = function (/* fns */) {
-        this.promise.fail.apply(this.promise, arguments);
+        this._promise.fail.apply(this._promise, arguments);
 
         return this;
     };
 
     $.Deferred.prototype.always = function (/* fns */) {
-        this.promise.always.apply(this.promise, arguments);
+        this._promise.always.apply(this._promise, arguments);
 
         return this;
     };
 
     $.Deferred.prototype.done = function (/* fns */) {
-        this.promise.done.apply(this.promise, arguments);
+        this._promise.done.apply(this._promise, arguments);
 
         return this;
     };
 
     $.Deferred.prototype.progress = function (/* fns */) {
-        this.promise.progress.apply(this.promise, arguments);
+        this._promise.progress.apply(this._promise, arguments);
 
         return this;
     };
 
     $.Deferred.prototype.resolve = function () {
-        return this.resolveWith(this.promise, arguments);
+        return this.resolveWith(this._promise, arguments);
     };
 
     $.Deferred.prototype.resolveWith = function (context, args) {
-        this.promise._state = STATE.RESOLVED;
+        if (this._promise._state !== STATE.PENDING) {
+            return this;
+        }
+
+        this._promise._state = STATE.RESOLVED;
+
+        sequentialCalls(context || this._promise, args, this._promise.successCallbacks);
 
         return this;
     };
 
     $.Deferred.prototype.reject = function () {
-        return this.rejectWith(this.promise, arguments);
+        return this.rejectWith(this._promise, arguments);
     };
 
     $.Deferred.prototype.rejectWith = function (context, args) {
-        this.promise._state = STATE.REJECTED;
+        if (this._promise._state !== STATE.PENDING) {
+            return this;
+        }
+
+        this._promise._state = STATE.REJECTED;
+
+        sequentialCalls(context || this._promise, args, this._promise.failCallbacks);
 
         return this;
     };
 
     $.Deferred.prototype.notify = function () {
-        return this.notifyWith(this.promise, arguments);
+        return this.notifyWith(this._promise, arguments);
     };
 
     $.Deferred.prototype.notifyWith = function (context, args) {
+        sequentialCalls(context || this._promise, args, this._promise.progressCallbacks);
         return this;
     };
 
     $.Deferred.prototype.promise = function (obj) {
         //do we need promise non-objects??
-        return typeof obj === 'object' ? obj/* mixin promise into passed obj */ : this.promise;
+        return typeof obj === 'object' ? obj/* mixin promise into passed obj */ : this._promise;
     };
 
     $.when = function (/* dfds */) {
