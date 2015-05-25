@@ -1,0 +1,21 @@
+{
+  "name": "buck-deferred",
+  "version": "0.0.0",
+  "description": "Lightweight replacer for jQuery deferreds",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kirilknysh/buck-deferred.git"
+  },
+  "author": "Kiril Knysh",
+  "license": "MIT",
+  "homepage": "https://github.com/kirilknysh/buck-deferred",
+  "devDependencies": {
+    "chai": "^2.3.0",
+    "mocha": "^2.2.5",
+    "sinon": "^1.14.1",
+    "sinon-chai": "^2.7.0"
+  }
+}

@@ -1,0 +1,28 @@
+<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../node_modules/mocha/mocha.css" />
+</head>
+<body>
+    <div id="mocha"></div>
+
+    <script src="../node_modules/mocha/mocha.js"></script>
+    <script src="../node_modules/chai/chai.js"></script>
+    <script src="../node_modules/sinon/pkg/sinon.js"></script>
+    <script src="../node_modules/sinon-chai/lib/sinon-chai.js"></script>
+    <script type="text/javascript">
+        mocha.setup('bdd');
+    </script>
+
+    <script src="../src/buck-deferred.js"></script>
+
+    <script src="buck-deferred.spec.js"></script>
+
+    <script type="text/javascript">
+        var should = chai.should();
+        window.onload = function() {
+            mocha.run();
+        };
+    </script>
+</body>
+</html>
