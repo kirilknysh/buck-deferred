@@ -1,0 +1,29 @@
+<html>
+<head>
+    <title>Performance test for buck-deferred</title>
+    <link rel="stylesheet" type="text/css" href="perf-test.css">
+</head>
+<body>
+    <div>Performance test for buck-deferred</div>
+    <div class="controls">
+        <a href="#" class="button" id="start">run</a>
+    </div>
+    <div class="results" id="results"></div>
+
+    <script type="text/javascript">
+        window.onload = function() {
+            var startButton = document.getElementById('start');
+
+            startButton.addEventListener('click', function() {
+                var results = document.getElementById('results');
+
+                window.startPerfTest(results);
+
+                return false;
+            });
+        };
+    </script>
+    <script type="text/javascript" src="../src/buck-deferred.js"></script>
+    <script type="text/javascript" src="perf-test.js"></script>
+</body>
+</html>
