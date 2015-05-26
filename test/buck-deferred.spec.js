@@ -449,6 +449,63 @@ describe('$.Defered', function () {
         });
     });
 
+    describe('then', function () {
+        it('should accept success, fail and progress callbacks', function () {
+            var doneSpy = sinon.spy(),
+                failSpy = sinon.spy(),
+                progressSpy = sinon.spy();
+
+            dfd.then(doneSpy, null, progressSpy);
+
+            dfd.notify();
+            progressSpy.should.have.been.called;
+            dfd.resolve();
+            doneSpy.should.have.been.called;
+
+            dfd = new $.Deferred();
+            dfd.then(null, failSpy);
+            dfd.reject();
+            failSpy.should.have.been.called;
+        });
+
+        it('should support chaining', function () {
+            dfd.then(function () {}).should.be.instanceOf($.Deferred);
+        });
+
+        it('should forward arguments correctly', function (done) {
+            var args = { 'hero': 'Ghost Rider' },
+                middleDfd = new $.Deferred(),
+                middleArgs = { 'hero': 'Gambit' },
+
+                thenDoneSpy = sinon.spy(),
+                middleThenDoneSpy = sinon.spy();
+
+            dfd
+                .then(function (arg) {
+                    arg.should.be.equal(args);
+                    thenDoneSpy();
+
+                    return middleDfd;
+                })
+                .then(function (middleArg) {
+                    middleArg.should.be.equal(middleArgs);
+                    middleThenDoneSpy();
+
+                    thenDoneSpy.should.have.been.calledTwice;
+                    middleThenDoneSpy.should.have.been.calledAfter(thenDoneSpy);
+                    done();
+                });
+
+            dfd.then(function (arg) {
+                arg.should.be.equal(args);
+                thenDoneSpy();
+            });
+
+            dfd.resolve(args);
+            middleDfd.resolve(middleArgs);
+        });
+    });
+
 });
 
 describe('Promise', function () {
