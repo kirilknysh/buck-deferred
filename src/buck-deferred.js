@@ -8,7 +8,14 @@
         PENDING: 'pending',
         RESOLVED: 'resolved',
         REJECTED: 'rejected'
-    };
+    },
+    /**
+     * Determines if the passed argument is an array.
+     * @function isArray
+     * @private
+     * @returns {Boolean} True if argument is an array; false otherwise.
+     */
+    isArray;
 
     /**
      * Sequentialy calls functions with given context and arguments.
@@ -25,15 +32,13 @@
         //clear fns ???
     }
 
-    /**
-     * Determines if the passed argument is an array.
-     * @function isArray
-     * @private
-     * @returns {Boolean} True if argument is an array; false otherwise.
-     */
-    function isArray (arg) {
-        return Object.prototype.toString.call(arg) === '[object Array]';
-    }
+    isArray = (function () {
+        if (Array.isArray) {
+            return function __nativeIsArray__(arg) { return Array.isArray(arg); };
+        } else {
+            return function __toStringIsArray__(arg) { return Object.prototype.toString.call(arg) === '[object Array]'; };
+        }
+    })();
 
     /**
      * Creates a new Promise.
