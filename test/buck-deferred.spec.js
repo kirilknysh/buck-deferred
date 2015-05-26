@@ -295,6 +295,19 @@ describe('$.Defered', function () {
         it('should support chaining', function () {
             dfd.done(function() {}).should.be.equal(dfd);
         });
+
+        it('should accept array-like arguments', function () {
+            var done1Spy = sinon.spy(),
+                done2Spy = sinon.spy(),
+                done3Spy = sinon.spy();
+
+            dfd.done(done1Spy, [done2Spy, done3Spy]);
+            dfd.resolve();
+
+            done1Spy.should.have.been.called;
+            done2Spy.should.have.been.called;
+            done3Spy.should.have.been.called;
+        });
     });
 
     describe('fail', function () {
@@ -326,6 +339,19 @@ describe('$.Defered', function () {
 
         it('should support chaining', function () {
             dfd.fail(function() {}).should.be.equal(dfd);
+        });
+
+        it('should accept array-like arguments', function () {
+            var fail1Spy = sinon.spy(),
+                fail2Spy = sinon.spy(),
+                fail3Spy = sinon.spy();
+
+            dfd.fail(fail1Spy, [fail2Spy, fail3Spy]);
+            dfd.reject();
+
+            fail1Spy.should.have.been.called;
+            fail2Spy.should.have.been.called;
+            fail3Spy.should.have.been.called;
         });
     });
 
@@ -364,6 +390,19 @@ describe('$.Defered', function () {
         it('should support chaining', function () {
             dfd.progress(function() {}).should.be.equal(dfd);
         });
+
+        it('should accept array-like arguments', function () {
+            var progress1Spy = sinon.spy(),
+                progress2Spy = sinon.spy(),
+                progress3Spy = sinon.spy();
+
+            dfd.fail(progress1Spy, [progress2Spy, progress3Spy]);
+            dfd.reject();
+
+            progress1Spy.should.have.been.called;
+            progress2Spy.should.have.been.called;
+            progress3Spy.should.have.been.called;
+        });
     });
 
     describe('always', function () {
@@ -394,6 +433,19 @@ describe('$.Defered', function () {
 
         it('should support chaining', function () {
             dfd.always(function() {}).should.be.equal(dfd);
+        });
+
+        it('should accept array-like arguments', function () {
+            var always1Spy = sinon.spy(),
+                always2Spy = sinon.spy(),
+                always3Spy = sinon.spy();
+
+            dfd.fail(always1Spy, [always2Spy, always3Spy]);
+            dfd.reject();
+
+            always1Spy.should.have.been.called;
+            always2Spy.should.have.been.called;
+            always3Spy.should.have.been.called;
         });
     });
 

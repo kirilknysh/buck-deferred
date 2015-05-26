@@ -1,5 +1,5 @@
 ;(function (global, $) {
-    var 
+    var
     /**
      * Enum Promise state.
      * @enum {String}
@@ -9,6 +9,20 @@
         RESOLVED: 'resolved',
         REJECTED: 'rejected'
     };
+
+    function sequentialCalls (context, args, fns) {
+        var iterator = 0;
+
+        for (; iterator < fns.length; iterator++) {
+            fns[iterator].apply(context, args);
+        }
+
+        //clear fns ???
+    }
+
+    function isArray (arg) {
+        return Object.prototype.toString.call(arg) === '[object Array]';
+    }
 
     /**
      * Creates a new Promise.
@@ -43,7 +57,7 @@
     /**
      * Add fail callback(-s).
      * @function fail
-     * @param {Function|...Functions} 
+     * @param {Function|...Functions}
      * @returns {Promise} The current Promise.
      */
     Promise.prototype.fail = function (/* fns */) {
@@ -52,6 +66,8 @@
         for (; iterator < arguments.length; iterator++) {
             if (typeof arguments[iterator] === 'function') {
                 this.failCallbacks.push(arguments[iterator]);
+            } else if (isArray(arguments[iterator])) {
+                this.fail.apply(this, arguments[iterator]);
             }
         }
 
@@ -61,7 +77,7 @@
     /**
      * Add always (success + fail) callback(-s).
      * @function always
-     * @param {Function|...Functions} 
+     * @param {Function|...Functions}
      * @returns {Promise} The current Promise.
      */
     Promise.prototype.always = function (/* fns */) {
@@ -71,6 +87,8 @@
             if (typeof arguments[iterator] === 'function') {
                 this.successCallbacks.push(arguments[iterator]);
                 this.failCallbacks.push(arguments[iterator]);
+            } else if (isArray(arguments[iterator])) {
+                this.always.apply(this, arguments[iterator]);
             }
         }
 
@@ -80,7 +98,7 @@
     /**
      * Add success callback(-s).
      * @function done
-     * @param {Function|...Functions} 
+     * @param {Function|...Functions}
      * @returns {Promise} The current Promise.
      */
     Promise.prototype.done = function (/* fns */) {
@@ -89,6 +107,8 @@
         for (; iterator < arguments.length; iterator++) {
             if (typeof arguments[iterator] === 'function') {
                 this.successCallbacks.push(arguments[iterator]);
+            } else if (isArray(arguments[iterator])) {
+                this.done.apply(this, arguments[iterator]);
             }
         }
 
@@ -98,7 +118,7 @@
     /**
      * Add progress callback(-s).
      * @function progress
-     * @param {Function|...Functions} 
+     * @param {Function|...Functions}
      * @returns {Promise} The current Promise.
      */
     Promise.prototype.progress = function (/* fns */) {
@@ -107,21 +127,13 @@
         for (; iterator < arguments.length; iterator++) {
             if (typeof arguments[iterator] === 'function') {
                 this.progressCallbacks.push(arguments[iterator]);
+            } else if (isArray(arguments[iterator])) {
+                this.progress.apply(this, arguments[iterator]);
             }
         }
 
         return this;
     };
-
-    function sequentialCalls (context, args, fns) {
-        var iterator = 0;
-
-        for (; iterator < fns.length; iterator++) {
-            fns[iterator].apply(context, args);
-        }
-
-        //clear fns ??? 
-    }
 
 
     $.Deferred = function (func) {
