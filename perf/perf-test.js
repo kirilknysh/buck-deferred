@@ -81,7 +81,7 @@
         for (i = 0; i < l; i++) {
             dfds[i].done(doneFunc);
         }
-        logger.log('add then callbacks: ' + meter.finish());
+        logger.log('add done callbacks: ' + meter.finish());
 
         global.setTimeout(function() {
             if (typeof callback === 'function') {
@@ -145,7 +145,7 @@
         for (i = 0; i < l; i++) {
             dfds[i].reject();
         }
-        logger.log('resolve deferreds: ' + meter.finish());
+        logger.log('reject deferreds: ' + meter.finish());
 
         global.setTimeout(function() {
             if (typeof callback === 'function') {
