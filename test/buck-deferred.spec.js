@@ -450,3 +450,35 @@ describe('$.Defered', function () {
     });
 
 });
+
+describe('Promise', function () {
+    var promise;
+
+    beforeEach(function () {
+        promise = (new $.Deferred()).promise();
+    });
+
+    describe('fail', function () {
+        it('should support chaining', function () {
+            promise.fail(function () { }).should.be.equal(promise);
+        });
+    });
+
+    describe('always', function () {
+        it('should support chaining', function () {
+            promise.always(function () { }).should.be.equal(promise);
+        });
+    });
+
+    describe('done', function () {
+        it('should support chaining', function () {
+            promise.done(function () { }).should.be.equal(promise);
+        });
+    });
+
+    describe('progress', function () {
+        it('should support chaining', function () {
+            promise.progress(function () { }).should.be.equal(promise);
+        });
+    });
+});

@@ -10,6 +10,11 @@
         REJECTED: 'rejected'
     };
 
+    /**
+     * Sequentialy calls functions with given context and arguments.
+     * @function sequentialCalls
+     * @private
+     */
     function sequentialCalls (context, args, fns) {
         var iterator = 0;
 
@@ -20,6 +25,12 @@
         //clear fns ???
     }
 
+    /**
+     * Determines if the passed argument is an array.
+     * @function isArray
+     * @private
+     * @returns {Boolean} True if argument is an array; false otherwise.
+     */
     function isArray (arg) {
         return Object.prototype.toString.call(arg) === '[object Array]';
     }
