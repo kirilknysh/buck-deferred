@@ -65,9 +65,52 @@
     };
 
     Promise.prototype.then = function (fnDone, fnFail, fnProgress) {
-        this.done(fnDone);
-        this.fail(fnDone);
-        this.progress(fnProgress);
+        var thenDfd = new $.Deferred();
+
+        if (typeof fnDone === 'function') {
+            this.done(function () {
+                var result = fnDone.apply(this, arguments);
+
+                if (result instanceof $.Deferred) {
+                    result
+                        .done(function() { thenDfd.resolve();})
+                        .fail(function() { thenDfd.reject(); })
+                        .progress(function() { thenDfd.notify(); });
+                } else {
+                    thenDfd.resolveWith(this, [result]);
+                }
+            });
+        }
+        if (typeof fnFail === 'function') {
+            this.fail(function () {
+                var result = fnFail.apply(this, arguments);
+
+                if (result instanceof $.Deferred) {
+                    result
+                        .done(function() { thenDfd.resolve();})
+                        .fail(function() { thenDfd.reject(); })
+                        .progress(function() { thenDfd.notify(); });
+                } else {
+                    thenDfd.rejectWith(this, [result]);
+                }
+            });
+        }
+        if (typeof fnProgress === 'function') {
+            this.progress(function () {
+                var result = fnProgress.apply(this, arguments);
+
+                if (result instanceof $.Deferred) {
+                    result
+                        .done(function() { thenDfd.resolve();})
+                        .fail(function() { thenDfd.reject(); })
+                        .progress(function() { thenDfd.notify(); });
+                } else {
+                    thenDfd.notifyWith(this, [result]);
+                }
+            });
+        }
+
+        return thenDfd._promise;
     };
 
     /**
@@ -164,8 +207,8 @@
         return this._promise.state();
     };
 
-    $.Deferred.prototype.then = function () {
-        // chaining ???
+    $.Deferred.prototype.then = function (fnDone, fnFail, fnProgress) {
+        return this._promise.then.apply(this._promise, arguments);
     };
 
     $.Deferred.prototype.fail = function (/* fns */) {
