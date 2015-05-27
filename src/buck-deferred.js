@@ -73,9 +73,9 @@
 
                 if (result instanceof $.Deferred) {
                     result
-                        .done(function() { thenDfd.resolve();})
-                        .fail(function() { thenDfd.reject(); })
-                        .progress(function() { thenDfd.notify(); });
+                        .done(function() { thenDfd.resolveWith(null, arguments); })
+                        .fail(function() { thenDfd.rejectWith(null, arguments); })
+                        .progress(function() { thenDfd.notifyWith(null, arguments); });
                 } else {
                     thenDfd.resolveWith(this, [result]);
                 }
@@ -87,9 +87,9 @@
 
                 if (result instanceof $.Deferred) {
                     result
-                        .done(function() { thenDfd.resolve();})
-                        .fail(function() { thenDfd.reject(); })
-                        .progress(function() { thenDfd.notify(); });
+                        .done(function() { thenDfd.resolveWith(null, arguments);})
+                        .fail(function() { thenDfd.rejectWith(null, arguments); })
+                        .progress(function() { thenDfd.notifyWith(null, arguments); });
                 } else {
                     thenDfd.rejectWith(this, [result]);
                 }
@@ -101,9 +101,9 @@
 
                 if (result instanceof $.Deferred) {
                     result
-                        .done(function() { thenDfd.resolve();})
-                        .fail(function() { thenDfd.reject(); })
-                        .progress(function() { thenDfd.notify(); });
+                        .done(function() { thenDfd.resolveWith(null, arguments);})
+                        .fail(function() { thenDfd.rejectWith(null, arguments); })
+                        .progress(function() { thenDfd.notifyWith(null, arguments); });
                 } else {
                     thenDfd.notifyWith(this, [result]);
                 }
