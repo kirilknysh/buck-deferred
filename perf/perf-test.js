@@ -62,7 +62,7 @@
             i;
 
         meter.start();
-        for (i = 0; i < 99999; i++) {
+        for (i = 0; i < amount; i++) {
             dfds.push(new $.Deferred());
         }
         logger.log('create ' + amount + ' deferreds: ' + meter.finish());
