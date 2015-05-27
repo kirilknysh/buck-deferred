@@ -2,7 +2,19 @@
 
 describe('$.Defered', function () {
 
-    var dfd;
+    var dfd,
+        isPromise;
+
+    isPromise = function (arg) {
+        arg.should.have.property('then');
+        arg.should.have.property('done');
+        arg.should.have.property('fail');
+        arg.should.have.property('progress');
+        arg.should.not.have.property('resolve');
+        arg.should.not.have.property('reject');
+        arg.should.not.have.property('resolveWith');
+        arg.should.not.have.property('rejectWith');
+    };
 
     beforeEach(function () {
         dfd = new $.Deferred();
@@ -39,9 +51,7 @@ describe('$.Defered', function () {
 
     describe('promise', function () {
         it('should return promise', function () {
-            var prms = dfd.promise();
-
-            prms.should.be.equal(dfd._promise);
+            isPromise(dfd.promise());
         });
     });
 
@@ -469,7 +479,7 @@ describe('$.Defered', function () {
         });
 
         it('should support chaining', function () {
-            dfd.then(function () {}).should.be.instanceOf($.Deferred);
+            isPromise(dfd.then(function () {}));
         });
 
         it('should forward arguments correctly', function (done) {
