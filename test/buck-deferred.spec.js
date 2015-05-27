@@ -257,6 +257,26 @@ describe('$.Defered', function () {
             dfd.notify(notify2arg);
             progressSpy.should.have.been.calledWith(notify2arg);
         });
+
+        it('should not notify already reasolved deferred', function () {
+            var progressSpy = sinon.spy();
+
+            dfd.progress(progressSpy);
+            dfd.resolve();
+            dfd.notify();
+
+            progressSpy.should.not.have.been.called;
+        });
+
+        it('should not notify already rejected deferred', function () {
+            var progressSpy = sinon.spy();
+
+            dfd.progress(progressSpy);
+            dfd.reject();
+            dfd.notify();
+
+            progressSpy.should.not.have.been.called;
+        });
     });
 
     describe('notifyWith', function () {
@@ -318,6 +338,15 @@ describe('$.Defered', function () {
             done2Spy.should.have.been.called;
             done3Spy.should.have.been.called;
         });
+
+        it('should immediatelly call callbacks for already resolved deferred', function () {
+            var doneSpy = sinon.spy();
+
+            dfd.resolve();
+            dfd.done(doneSpy);
+
+            doneSpy.should.have.been.called;
+        });
     });
 
     describe('fail', function () {
@@ -362,6 +391,15 @@ describe('$.Defered', function () {
             fail1Spy.should.have.been.called;
             fail2Spy.should.have.been.called;
             fail3Spy.should.have.been.called;
+        });
+
+        it('should immediatelly call callbacks for already rejected deferred', function () {
+            var failSpy = sinon.spy();
+
+            dfd.reject();
+            dfd.fail(failSpy);
+
+            failSpy.should.have.been.called;
         });
     });
 
@@ -457,6 +495,24 @@ describe('$.Defered', function () {
             always2Spy.should.have.been.called;
             always3Spy.should.have.been.called;
         });
+
+        it('should immediatelly call callbacks for already rejected deferred', function () {
+            var failSpy = sinon.spy();
+
+            dfd.reject();
+            dfd.always(failSpy);
+
+            failSpy.should.have.been.called;
+        });
+
+        it('should immediatelly call callbacks for already resolved deferred', function () {
+            var doneSpy = sinon.spy();
+
+            dfd.resolve();
+            dfd.always(doneSpy);
+
+            doneSpy.should.have.been.called;
+        });
     });
 
     describe('then', function () {
@@ -513,6 +569,24 @@ describe('$.Defered', function () {
 
             dfd.resolve(args);
             middleDfd.resolve(middleArgs);
+        });
+
+        it('should immediatelly call callbacks for already resolve deferred', function () {
+            var doneSpy = sinon.spy();
+
+            dfd.resolve();
+            dfd.then(doneSpy);
+
+            doneSpy.should.have.been.called;
+        });
+
+        it('should immediatelly call callbacks for already rejected deferred', function () {
+            var failSpy = sinon.spy();
+
+            dfd.reject();
+            dfd.then(null, failSpy);
+
+            failSpy.should.have.been.called;
         });
     });
 
