@@ -53,6 +53,19 @@ describe('$.Defered', function () {
         it('should return promise', function () {
             isPromise(dfd.promise());
         });
+
+        it('should make promise from a regular object', function () {
+            var obj = { 'hero': 'Iceman' },
+                doneSpy = sinon.spy();
+
+            dfd.promise(obj);
+            isPromise(obj);
+
+            obj.done(doneSpy);
+            dfd.resolve();
+
+            doneSpy.should.have.been.called;
+        });
     });
 
     describe('resolve', function () {
