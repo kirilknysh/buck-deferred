@@ -3,7 +3,8 @@
 describe('$.Defered', function () {
 
     var dfd,
-        isPromise;
+        isPromise,
+        isDeferred;
 
     isPromise = function (arg) {
         arg.should.have.property('then');
@@ -16,13 +17,24 @@ describe('$.Defered', function () {
         arg.should.not.have.property('rejectWith');
     };
 
+    isDeferred = function (arg) {
+        arg.should.have.property('then');
+        arg.should.have.property('done');
+        arg.should.have.property('fail');
+        arg.should.have.property('progress');
+        arg.should.have.property('resolve');
+        arg.should.have.property('reject');
+        arg.should.have.property('resolveWith');
+        arg.should.have.property('rejectWith');
+    };
+
     beforeEach(function () {
         dfd = new $.Deferred();
     });
 
     describe('contructor', function () {
         it('should create a new Deferred object', function () {
-            dfd.should.be.instanceOf($.Deferred);
+            isDeferred(dfd);
         });
 
         it('should call passed function', function () {
