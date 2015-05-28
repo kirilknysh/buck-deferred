@@ -12,8 +12,8 @@
         /**
          * Determines if the passed argument is an array.
          * @function isArray
-         * @private
          * @returns {Boolean} True if argument is an array; false otherwise.
+         * @private
          */
         isArray;
 
@@ -32,8 +32,25 @@
         //clear fns ???
     }
 
-    function argumentsToArray (args) {
-        return Array.apply(null, args);
+    /**
+     * Converts the given parameter (arguments or array) to array.
+     * @function copyToArray
+     * @param {Arguments|Array} [args] Object to be converted.
+     * @returns {Array} New array.
+     * @private
+     */
+    function copyToArray (args) {
+        var i, result;
+
+        if (!args || typeof args.length !== 'number') {
+            return [];
+        }
+
+        i = args.length,
+        result = new Array(i);
+        while (--i >= 0) { result[i] = args[i]; }
+
+        return result;
     }
 
     isArray = (function () {
@@ -76,6 +93,7 @@
 
     /**
      * Chains success, fail and (or) progress callbacks.
+     * @function then
      * @param {Function} [fnDone] Success callback.
      * @param {Function} [fnFail] Fail callback.
      * @param {Function} [fnProgress] Progress callback.
@@ -313,7 +331,7 @@
      * @returns {Deferred} The current Deferred.
      */
     $.Deferred.prototype.resolve = function () {
-        return this.resolveWith(this._promise, argumentsToArray(arguments));
+        return this.resolveWith(this._promise, arguments);
     };
 
     /**
@@ -330,7 +348,7 @@
 
         this._promise._state = STATE.RESOLVED;
         this._promise._resultContext = context || this._promise;
-        this._promise._resultArguments = args;
+        this._promise._resultArguments = copyToArray(args);
 
         sequentialCalls(this._promise._resultContext, this._promise._resultArguments,
             this._promise.successCallbacks);
@@ -345,7 +363,7 @@
      * @returns {Deferred} The current Deferred.
      */
     $.Deferred.prototype.reject = function () {
-        return this.rejectWith(this._promise, argumentsToArray(arguments));
+        return this.rejectWith(this._promise, arguments);
     };
 
     /**
@@ -362,7 +380,7 @@
 
         this._promise._state = STATE.REJECTED;
         this._promise._resultContext = context || this._promise;
-        this._promise._resultArguments = args;
+        this._promise._resultArguments = copyToArray(args);
 
         sequentialCalls(this._promise._resultContext, this._promise._resultArguments,
             this._promise.failCallbacks);
@@ -377,7 +395,7 @@
      * @returns {Deferred} The current Deferred.
      */
     $.Deferred.prototype.notify = function () {
-        return this.notifyWith(this._promise, argumentsToArray(arguments));
+        return this.notifyWith(this._promise, arguments);
     };
 
     /**
@@ -393,7 +411,7 @@
         }
 
         this._promise._progressContext = context || this._promise;
-        this._promise._progressArguments = args;
+        this._promise._progressArguments = copyToArray(args);
 
         sequentialCalls(this._promise._progressContext, this._promise._progressArguments,
             this._promise.progressCallbacks);
