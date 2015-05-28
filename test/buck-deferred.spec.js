@@ -1,7 +1,5 @@
 /* jshint expr: true */
 
-describe('$.Defered', function () {
-
     var dfd,
         isPromise,
         isDeferred;
@@ -28,6 +26,7 @@ describe('$.Defered', function () {
         arg.should.have.property('rejectWith');
     };
 
+describe('$.Defered', function () {
     beforeEach(function () {
         dfd = new $.Deferred();
     });
@@ -664,6 +663,151 @@ describe('Promise', function () {
     describe('progress', function () {
         it('should support chaining', function () {
             promise.progress(function () { }).should.be.equal(promise);
+        });
+    });
+});
+
+describe('helpers', function () {
+    beforeEach(function () {
+        dfd = new $.Deferred();
+    });
+
+    describe('$.when', function () {
+        it('should always return Promise', function () {
+            isPromise($.when());
+            isPromise($.when({ 'hero': 'Moon Knight' }));
+            isPromise($.when(null));
+            isPromise($.when(dfd));
+            isPromise($.when(dfd.promise()));
+            isPromise($.when(dfd, new $.Deferred()));
+        });
+
+        it('should immediately call success callbacks for non-Deferred/Promise objects', function () {
+            var whenSpy = sinon.spy(),
+                whenArg = { 'hero': 'Mr. Fantastic' };
+
+            $.when().done(whenSpy);
+            whenSpy.should.have.been.called;
+
+            whenSpy = sinon.spy();
+            $.when(null).done(whenSpy);
+            whenSpy.should.have.been.calledWith(null);
+
+            whenSpy = sinon.spy();
+            $.when(whenArg).done(whenSpy);
+            whenSpy.should.have.been.calledWith(whenArg);
+        });
+
+        it('should accept Deferred object and return it;s Promise', function () {
+            $.when(dfd).should.be.equal(dfd.promise());
+        });
+
+        it('should wait for all passed deferreds before success callbacks calling', function () {
+            var doneSpy = sinon.spy(),
+                dfd1 = new $.Deferred();
+
+            $.when(dfd, dfd1).done(doneSpy);
+            doneSpy.should.not.have.been.called;
+            dfd.resolve();
+            dfd1.resolve();
+            doneSpy.should.have.been.called;
+        });
+
+        it('should not call success callbacks if at least one deffered has been rejected', function () {
+            var doneSpy = sinon.spy(),
+                dfd1 = new $.Deferred();
+
+            $.when(dfd, dfd1).done(doneSpy);
+            dfd.resolve();
+            dfd1.reject();
+            doneSpy.should.not.have.been.called;
+        });
+
+        it('should call fail callbacks if at least one deffered has been rejected', function () {
+            var failSpy = sinon.spy(),
+                doneSpy = sinon.spy(),
+                dfd1 = new $.Deferred();
+
+            $.when(dfd, dfd1).done(doneSpy).fail(failSpy);
+            dfd.resolve();
+            dfd1.reject();
+            failSpy.should.have.been.called;
+            doneSpy.should.not.have.been.called;
+        });
+
+        it('should pass resolved arguments correctly', function () {
+            var doneSpy = sinon.spy(),
+                resolveArgs = { 'hero': 'Ms. Marvel' },
+                resolveArgs1 = { 'hero': 'Nightcrawler' };
+
+            $.when(dfd).done(doneSpy);
+
+            dfd.resolve(resolveArgs, resolveArgs1);
+            doneSpy.should.have.been.calledWith(resolveArgs, resolveArgs1);
+        });
+
+        it('should pass rejected arguments correctly', function () {
+            var failSpy = sinon.spy(),
+                rejectArgs = { 'hero': 'Nova' };
+
+            $.when(dfd, new $.Deferred()).fail(failSpy);
+
+            dfd.reject(rejectArgs);
+            failSpy.should.have.been.calledWith(rejectArgs);
+        });
+
+        it('should pass resolved arguments from all passed deferreds', function () {
+            var doneSpy = sinon.spy(),
+                dfd1 = new $.Deferred(),
+                resolveArgs = { 'hero': 'Psylocke' },
+                resolveArgs1 = { 'hero': 'Punisher' };
+
+            $.when(dfd, dfd1).done(doneSpy);
+            dfd.resolve(resolveArgs);
+            dfd1.resolve(resolveArgs1);
+
+            doneSpy.should.have.been.calledWith(resolveArgs, resolveArgs1);
+        });
+
+        it('should pass resolved arguments from all passed deferreds correctly', function () {
+            var doneSpy = sinon.spy(),
+                dfd1 = new $.Deferred(),
+                resolveArgs = { 'hero': 'Psylocke' },
+                resolveArgs1 = ['Rocket Raccoon', 'Rogue'];
+
+            $.when(dfd, dfd1).done(doneSpy);
+            dfd.resolve(resolveArgs);
+            dfd1.resolve.apply(dfd1, resolveArgs1);
+
+            doneSpy.should.have.been.calledWith(resolveArgs, resolveArgs1);
+        });
+
+        it('should pass resolved context from passed deferred', function (done) {
+            var resolveContext = { 'hero': 'She-Hulk' },
+                resolveArgs = { 'hero': 'Silver Surfer' };
+
+            $.when(dfd).done(function (arg) {
+                this.should.be.equal(resolveContext);
+                arg.should.be.equal(resolveArgs);
+
+                done();
+            });
+            dfd.resolveWith(resolveContext, [resolveArgs]);
+        });
+
+        it('should pass resolved context from all passed deferreds correctly', function (done) {
+            var dfd1 = new $.Deferred(),
+                resolveContext = { 'hero': 'Psylocke' },
+                resolveContext1 = { 'hero': 'Scarlet Witch' };
+
+            $.when(dfd, dfd1).done(function () {
+                this[0].should.be.equal(resolveContext);
+                this[1].should.be.equal(resolveContext1);
+
+                done();
+            });
+            dfd.resolveWith(resolveContext);
+            dfd1.resolveWith(resolveContext1);
         });
     });
 });
