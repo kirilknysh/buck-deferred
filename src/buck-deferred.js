@@ -32,6 +32,10 @@
         //clear fns ???
     }
 
+    function argumentsToArray (args) {
+        return Array.apply(null, args);
+    }
+
     isArray = (function () {
         if (Array.isArray) {
             return function __nativeIsArray__(arg) { return Array.isArray(arg); };
@@ -53,6 +57,12 @@
          * @private
          */
         this._state = STATE.PENDING;
+
+        this._resultContext = null;
+        this._resultArguments = null;
+
+        this._progressContext = null;
+        this._progressArguments = null;
     }
 
     /**
@@ -132,6 +142,9 @@
         for (; iterator < arguments.length; iterator++) {
             if (typeof arguments[iterator] === 'function') {
                 this.failCallbacks.push(arguments[iterator]);
+                if (this._state === STATE.REJECTED) {
+                    arguments[iterator].apply(this._resultContext, this._resultArguments);
+                }
             } else if (isArray(arguments[iterator])) {
                 this.fail.apply(this, arguments[iterator]);
             }
@@ -173,6 +186,9 @@
         for (; iterator < arguments.length; iterator++) {
             if (typeof arguments[iterator] === 'function') {
                 this.successCallbacks.push(arguments[iterator]);
+                if (this._state === STATE.RESOLVED) {
+                    arguments[iterator].apply(this._resultContext, this._resultArguments);
+                }
             } else if (isArray(arguments[iterator])) {
                 this.done.apply(this, arguments[iterator]);
             }
@@ -193,6 +209,9 @@
         for (; iterator < arguments.length; iterator++) {
             if (typeof arguments[iterator] === 'function') {
                 this.progressCallbacks.push(arguments[iterator]);
+                if (this._progressContext !== null) {
+                    arguments[iterator].apply(this._progressContext, this._progressArguments);
+                }
             } else if (isArray(arguments[iterator])) {
                 this.progress.apply(this, arguments[iterator]);
             }
@@ -291,7 +310,7 @@
      * @returns {Deferred} The current Deferred.
      */
     $.Deferred.prototype.resolve = function () {
-        return this.resolveWith(this._promise, arguments);
+        return this.resolveWith(this._promise, argumentsToArray(arguments));
     };
 
     /**
@@ -307,8 +326,11 @@
         }
 
         this._promise._state = STATE.RESOLVED;
+        this._promise._resultContext = context || this._promise;
+        this._promise._resultArguments = args;
 
-        sequentialCalls(context || this._promise, args, this._promise.successCallbacks);
+        sequentialCalls(this._promise._resultContext, this._promise._resultArguments,
+            this._promise.successCallbacks);
 
         return this;
     };
@@ -320,7 +342,7 @@
      * @returns {Deferred} The current Deferred.
      */
     $.Deferred.prototype.reject = function () {
-        return this.rejectWith(this._promise, arguments);
+        return this.rejectWith(this._promise, argumentsToArray(arguments));
     };
 
     /**
@@ -336,8 +358,11 @@
         }
 
         this._promise._state = STATE.REJECTED;
+        this._promise._resultContext = context || this._promise;
+        this._promise._resultArguments = args;
 
-        sequentialCalls(context || this._promise, args, this._promise.failCallbacks);
+        sequentialCalls(this._promise._resultContext, this._promise._resultArguments,
+            this._promise.failCallbacks);
 
         return this;
     };
@@ -349,7 +374,7 @@
      * @returns {Deferred} The current Deferred.
      */
     $.Deferred.prototype.notify = function () {
-        return this.notifyWith(this._promise, arguments);
+        return this.notifyWith(this._promise, argumentsToArray(arguments));
     };
 
     /**
@@ -360,9 +385,16 @@
      * @returns {Deferred} The current Deferred.
      */
     $.Deferred.prototype.notifyWith = function (context, args) {
-        if (this._promise.state() === STATE.PENDING) {
-            sequentialCalls(context || this._promise, args, this._promise.progressCallbacks);
+        if (this._promise.state() !== STATE.PENDING) {
+            return this;
         }
+
+        this._promise._progressContext = context || this._promise;
+        this._promise._progressArguments = args;
+
+        sequentialCalls(this._promise._progressContext, this._promise._progressArguments,
+            this._promise.progressCallbacks);
+
         return this;
     };
 

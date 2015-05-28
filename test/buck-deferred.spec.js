@@ -353,12 +353,14 @@ describe('$.Defered', function () {
         });
 
         it('should immediatelly call callbacks for already resolved deferred', function () {
-            var doneSpy = sinon.spy();
+            var doneSpy = sinon.spy(),
+                doneArgs = { 'hero': 'Jean Grey' };
 
-            dfd.resolve();
+            dfd.resolve(doneArgs);
             dfd.done(doneSpy);
 
             doneSpy.should.have.been.called;
+            doneSpy.should.have.been.called.calledWith(doneArgs);
         });
     });
 
@@ -407,12 +409,14 @@ describe('$.Defered', function () {
         });
 
         it('should immediatelly call callbacks for already rejected deferred', function () {
-            var failSpy = sinon.spy();
+            var failSpy = sinon.spy(),
+                failArgs = { 'hero': 'Juggernaut' };
 
-            dfd.reject();
+            dfd.reject(failArgs);
             dfd.fail(failSpy);
 
             failSpy.should.have.been.called;
+            failSpy.should.have.been.called.calledWith(failArgs);
         });
     });
 
@@ -463,6 +467,17 @@ describe('$.Defered', function () {
             progress1Spy.should.have.been.called;
             progress2Spy.should.have.been.called;
             progress3Spy.should.have.been.called;
+        });
+
+        it('should immediatelly call callbacks with last notification', function () {
+            var progressSpy = sinon.spy(),
+                progressArgs = { 'hero': 'Loki' };
+
+            dfd.notify(progressArgs);
+            dfd.progress(progressSpy);
+
+            progressSpy.should.have.been.called;
+            progressSpy.should.have.been.called.calledWith(progressArgs);
         });
     });
 
