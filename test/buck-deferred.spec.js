@@ -525,21 +525,25 @@ describe('$.Defered', function () {
         });
 
         it('should immediatelly call callbacks for already rejected deferred', function () {
-            var failSpy = sinon.spy();
+            var failSpy = sinon.spy(),
+                failArgs = { 'hero': 'Luke Cage' };
 
-            dfd.reject();
+            dfd.reject(failArgs);
             dfd.always(failSpy);
 
             failSpy.should.have.been.called;
+            failSpy.should.have.been.calledWith(failArgs);
         });
 
         it('should immediatelly call callbacks for already resolved deferred', function () {
-            var doneSpy = sinon.spy();
+            var doneSpy = sinon.spy(),
+                doneArgs = { 'hero': 'Magneto' };
 
-            dfd.resolve();
+            dfd.resolve(doneArgs);
             dfd.always(doneSpy);
 
             doneSpy.should.have.been.called;
+            doneSpy.should.have.been.calledWith(doneArgs);
         });
     });
 

@@ -166,6 +166,9 @@
             if (typeof arguments[iterator] === 'function') {
                 this.successCallbacks.push(arguments[iterator]);
                 this.failCallbacks.push(arguments[iterator]);
+                if (this._state !== STATE.PENDING) {
+                    arguments[iterator].apply(this._resultContext, this._resultArguments);
+                }
             } else if (isArray(arguments[iterator])) {
                 this.always.apply(this, arguments[iterator]);
             }
