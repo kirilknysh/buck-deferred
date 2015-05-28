@@ -360,7 +360,9 @@
      * @returns {Deferred} The current Deferred.
      */
     $.Deferred.prototype.notifyWith = function (context, args) {
-        sequentialCalls(context || this._promise, args, this._promise.progressCallbacks);
+        if (this._promise.state() === STATE.PENDING) {
+            sequentialCalls(context || this._promise, args, this._promise.progressCallbacks);
+        }
         return this;
     };
 
