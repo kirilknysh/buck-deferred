@@ -5,6 +5,7 @@
   "authors": [
     "Kiril Knysh <k.knysh@gmail.com>"
   ],
+  "description": "Lightweight replacer for jQuery deferreds",
   "main": "build/buck-deferred.js",
   "moduleType": [
     "globals"
