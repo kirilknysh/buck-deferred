@@ -33,7 +33,8 @@
     function failFunc () { }
     function doneFunc () { }
 
-    var meter, logger;
+    var timeout = 200,
+        meter, logger;
 
     global.startPerfTest = function (results) {
         var objAmount = 9999;
@@ -53,7 +54,10 @@
                 alwaysTest(objAmount, function () {
                     logger.log('------------------');
                     thenTest(objAmount, function () {
-                        logger.log('finish');
+                        logger.log('------------------');
+                         whenTest(objAmount, function () {
+                            logger.log('finish');
+                        });
                     });
                 });
             });
@@ -74,7 +78,7 @@
             if (typeof callback === 'function') {
                 callback(dfds);
             }
-        }, 100);
+        }, timeout);
     }
 
     function setDoneCallbacks (dfds, callback) {
@@ -90,7 +94,7 @@
             if (typeof callback === 'function') {
                 callback(dfds);
             }
-        }, 100);
+        }, timeout);
     }
 
     function setFailCallbacks (dfds, callback) {
@@ -106,7 +110,7 @@
             if (typeof callback === 'function') {
                 callback(dfds);
             }
-        }, 100);
+        }, timeout);
     }
 
     function setAlwaysCallbacks (dfds, callback) {
@@ -122,7 +126,7 @@
             if (typeof callback === 'function') {
                 callback(dfds);
             }
-        }, 100);
+        }, timeout);
     }
 
     function setThenCallbacks (dfds, callback) {
@@ -138,7 +142,21 @@
             if (typeof callback === 'function') {
                 callback(dfds);
             }
-        }, 100);
+        }, timeout);
+    }
+
+    function setDeferredsToWhen (dfds, callback) {
+        var i, l = dfds.length;
+
+        meter.start();
+        $.when.apply($, dfds);
+        logger.log('set deferreds to $.when: ' + meter.finish());
+
+        global.setTimeout(function() {
+            if (typeof callback === 'function') {
+                callback(dfds);
+            }
+        }, timeout);
     }
 
     function resolveDeferreds (dfds, callback) {
@@ -154,7 +172,7 @@
             if (typeof callback === 'function') {
                 callback(dfds);
             }
-        }, 100);
+        }, timeout);
     }
 
     function rejectDeferreds (dfds, callback) {
@@ -170,7 +188,7 @@
             if (typeof callback === 'function') {
                 callback(dfds);
             }
-        }, 100);
+        }, timeout);
     }
 
     function resolveRejectDeferreds (dfds, callback) {
@@ -189,7 +207,7 @@
             if (typeof callback === 'function') {
                 callback(dfds);
             }
-        }, 100);
+        }, timeout);
     }
 
     function notifyDeferreds (dfds, callback) {
@@ -205,7 +223,7 @@
             if (typeof callback === 'function') {
                 callback(dfds);
             }
-        }, 100);
+        }, timeout);
     }
 
 
@@ -217,7 +235,7 @@
                         if (typeof callback === 'function') {
                             callback(dfds);
                         }
-                    }, 100);
+                    }, timeout);
                 });
             });
         });
@@ -231,7 +249,7 @@
                         if (typeof callback === 'function') {
                             callback(dfds);
                         }
-                    }, 100);
+                    }, timeout);
                 });
             });
         });
@@ -245,7 +263,7 @@
                         if (typeof callback === 'function') {
                             callback(dfds);
                         }
-                    }, 100);
+                    }, timeout);
                 });
             });
         });
@@ -260,8 +278,22 @@
                             if (typeof callback === 'function') {
                                 callback(dfds);
                             }
-                        }, 100);
+                        }, timeout);
                     });
+                });
+            });
+        });
+    }
+
+    function whenTest (objAmount, callback) {
+        createDeferreds(objAmount, function (dfds) {
+            setDeferredsToWhen(dfds, function (dfds) {
+                resolveDeferreds(dfds, function (dfds) {
+                    global.setTimeout(function() {
+                        if (typeof callback === 'function') {
+                            callback(dfds);
+                        }
+                    }, timeout);
                 });
             });
         });
