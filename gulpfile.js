@@ -8,3 +8,11 @@ gulp.task('minify', function () {
         .pipe(rename('buck-deferred.min.js'))
         .pipe(gulp.dest('src'));
 });
+
+gulp.task('build', function () {
+    gulp.src('src/buck-deferred.js')
+        .pipe(gulp.dest('build'))
+        .pipe(uglify())
+        .pipe(rename('buck-deferred.min.js'))
+        .pipe(gulp.dest('build'));
+});
