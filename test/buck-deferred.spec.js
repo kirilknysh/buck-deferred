@@ -809,5 +809,33 @@ describe('helpers', function () {
             dfd.resolveWith(resolveContext);
             dfd1.resolveWith(resolveContext1);
         });
+
+        it('should notify result deferred during param-deferreds progress', function () {
+            var progressArg = { 'hero': 'Star-Lord' };
+
+            $.when('Squirrel Girl', dfd).progress(function () {
+                should.not.exist(arguments[0]);
+                arguments[1].should.be.equal(progressArg);
+            });
+            dfd.notify(progressArg);
+        });
+
+        it('should notify result deferred during param-deferreds progress and pass correct context', function () {
+            var dfd1 = new $.Deferred(),
+                progressCtx = { 'hero': 'Thing' },
+                progressArg = { 'hero': 'Storm' };
+
+            $.when(dfd1, 'Taskmaster', dfd).progress(function () {
+                should.not.exist(arguments[0]);
+                should.not.exist(arguments[1]);
+                arguments[2].should.be.equal(progressArg);
+
+                this.length.should.be.equal(3);
+                should.not.exist(this[0]);
+                should.not.exist(this[1]);
+                this[2].should.be.equal(progressCtx);
+            });
+            dfd.notifyWith(progressCtx, [progressArg]);
+        });
     });
 });

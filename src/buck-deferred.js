@@ -431,6 +431,63 @@
     };
 
     $.when = function (/* dfds */) {
+        var argsLength = arguments.length,
+            remaining = argsLength,
+            param, params, contexts, iterator, dfd,
+            progressParams,
+            doneFn, progressFn;
 
+        if (argsLength === 0) {
+            return (new $.Deferred()).resolve().promise();
+        } else if (argsLength === 1) {
+            param = arguments[0];
+            if (param instanceof $.Deferred) {
+                return param.promise();
+            } else if (param instanceof Promise) {
+                return param;
+            } else {
+                return (new $.Deferred()).resolve(param).promise();
+            }
+        }
+
+        params = copyToArray(arguments);
+        contexts = new Array(argsLength);
+        progressParams = new Array(argsLength);
+        dfd = new $.Deferred();
+        doneFn = function (index) {
+            return function (doneResult) {
+                contexts[index] = this;
+                params[index] = arguments.length > 1 ? copyToArray(arguments) : doneResult;
+                remaining--;
+                if (remaining < 1) {
+                    dfd.resolveWith(contexts, params);
+                }
+            };
+        };
+        progressFn = function (index) {
+            return function (progressResult) {
+                contexts[index] = this;
+                progressParams[index] = arguments.length > 1 ? copyToArray(arguments) : progressResult;
+                dfd.notifyWith(contexts, progressParams);
+            };
+        };
+
+        for (iterator = 0; iterator < argsLength; iterator++) {
+            param = params[iterator];
+            if (param instanceof $.Deferred || param instanceof Promise) {
+                param
+                    .done(doneFn(iterator))
+                    .progress(progressFn(iterator))
+                    .fail(function () { dfd.rejectWith(this, arguments); });
+            } else {
+                remaining--;
+            }
+        }
+
+        if (remaining === 0) {
+            dfd.resolveWith(contexts, params);
+        }
+
+        return dfd.promise();
     };
 })(this, this.$ = this.$ || {});
