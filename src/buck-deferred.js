@@ -46,7 +46,7 @@
             return [];
         }
 
-        i = args.length,
+        i = args.length;
         result = new Array(i);
         while (--i >= 0) { result[i] = args[i]; }
 
@@ -89,6 +89,20 @@
      */
     Promise.prototype.state = function () {
         return this._state;
+    };
+
+    /**
+     * Returns current Promise object or makes Promise from the passed object.
+     * @function promise
+     * @param {object} [obj] Object that wants to be a Promise.
+     * @returns {Promise} Current Promise or a new one.
+     */
+    Promise.prototype.promise = function(obj) {
+        if (obj == null) {
+            return this;
+        }
+
+        return obj;
     };
 
     /**
@@ -426,8 +440,7 @@
      * @returns {Promise} A new Promise.
      */
     $.Deferred.prototype.promise = function (obj) {
-        //do we need promise non-objects??
-        return typeof obj === 'object' ? obj/* mixin promise into passed obj */ : this._promise;
+        return this._promise.promise(obj);
     };
 
     $.when = function (/* dfds */) {
@@ -435,7 +448,7 @@
             remaining = argsLength,
             param, params, contexts, iterator, dfd,
             progressParams,
-            doneFn, progressFn;
+            doneFn, progressFn, failFn;
 
         if (argsLength === 0) {
             return (new $.Deferred()).resolve().promise();
@@ -471,6 +484,9 @@
                 dfd.notifyWith(contexts, progressParams);
             };
         };
+        failFn = function () {
+            dfd.rejectWith(this, arguments);
+        };
 
         for (iterator = 0; iterator < argsLength; iterator++) {
             param = params[iterator];
@@ -478,7 +494,7 @@
                 param
                     .done(doneFn(iterator))
                     .progress(progressFn(iterator))
-                    .fail(function () { dfd.rejectWith(this, arguments); });
+                    .fail(failFn);
             } else {
                 remaining--;
             }

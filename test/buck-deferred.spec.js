@@ -77,6 +77,19 @@ describe('$.Defered', function () {
 
             doneSpy.should.have.been.called;
         });
+
+        it('should mixin promise correctly', function () {
+            var obj = { 'hero': 'Venom' },
+                doneSpy = sinon.spy(),
+                resolveArgs = { 'hero': 'Vision' };
+
+            dfd.promise(obj);
+            obj.should.have.property('done');
+            obj.done(doneSpy);
+            dfd.resolve(resolveArgs);
+
+            doneSpy.should.have.been.calledWith(resolveArgs);
+        });
     });
 
     describe('resolve', function () {
