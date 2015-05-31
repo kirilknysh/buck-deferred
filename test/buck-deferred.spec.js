@@ -90,6 +90,21 @@ describe('$.Defered', function () {
 
             doneSpy.should.have.been.calledWith(resolveArgs);
         });
+
+        it('should mixin promise correctly (for reject)', function () {
+            var obj = { 'hero': 'Winter Soldier' },
+                failSpy = sinon.spy(),
+                rejectContext = { 'hero': 'X-23' },
+                rejectArgs = { 'hero': 'Wolverine' };
+
+            dfd.promise(obj);
+            obj.should.have.property('fail');
+            obj.fail(failSpy);
+            dfd.rejectWith(rejectContext, [rejectArgs]);
+
+            failSpy.should.have.been.calledWith(rejectArgs);
+            failSpy.should.have.been.calledOn(rejectContext);
+        });
     });
 
     describe('resolve', function () {
