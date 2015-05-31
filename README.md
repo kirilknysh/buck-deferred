@@ -1,6 +1,12 @@
 # buck-deferred
 Lightweight replacer for jQuery deferreds
 
+## How to install?
+**buck-deferred** is available in **bower**:
+```
+bower install buck-deferred --save-dev
+```
+
 ## Why?
 I like [jQuery.Deferred](https://api.jquery.com/category/deferred-object/). Seriously. But after some investigation I've found out that jQuery.Deferred has some performance problems. Most of them are caused by a wide jQuery support which is not necessary for me.
 
