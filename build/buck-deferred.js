@@ -1,4 +1,4 @@
-/* buck-deferred v0.1.0 [Distributed under MIT license] */
+/* buck-deferred v0.2.0 [Distributed under MIT license] */
 ;(function (global, $) {
     var
         /**
@@ -54,6 +54,29 @@
         return result;
     }
 
+    /**
+     * Merges given promise into passed object.
+     * @function mergePromise
+     * @param {Object} obj The source object that will become a promise.
+     * @param {Promise} promise Promise object.
+     * @returns {Object} A promise-d source object.
+     * @private
+     */
+    function mergePromise (obj, promise) {
+        var keys = Object.keys(promise),
+            protoKeys = Object.keys(Promise.prototype),
+            iterator;
+
+        for (iterator = 0; iterator < keys.length; iterator++) {
+            obj[keys[iterator]] = promise[keys[iterator]];
+        }
+        for (iterator = 0; iterator < protoKeys.length; iterator++) {
+            obj[protoKeys[iterator]] = promise[protoKeys[iterator]];
+        }
+
+        return obj;
+    }
+
     isArray = (function () {
         if (Array.isArray) {
             return function __nativeIsArray__(arg) { return Array.isArray(arg); };
@@ -103,7 +126,7 @@
             return this;
         }
 
-        return obj;
+        return mergePromise(obj, this);
     };
 
     /**
