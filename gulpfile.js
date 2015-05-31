@@ -12,9 +12,10 @@ gulp.task('minify', function () {
 
 gulp.task('build', function () {
     gulp.src('src/buck-deferred.js')
+        .pipe(wrap("/* buck-deferred v0.1.0 [Distributed under MIT license] */\n<%= contents %>"))
         .pipe(gulp.dest('build'))
         .pipe(uglify())
-        .pipe(wrap("//Build version of buck-deferred\n<%= contents %>"))
+        .pipe(wrap("/* buck-deferred v0.1.0 [Distributed under MIT license] */\n<%= contents %>"))
         .pipe(rename('buck-deferred.min.js'))
         .pipe(gulp.dest('build'));
 });
