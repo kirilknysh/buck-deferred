@@ -168,6 +168,18 @@ describe('$.Defered', function () {
             doneSpy.should.have.been.calledOnce;
             doneSpy.should.have.been.calledWith(resolve1arg);
         });
+
+        it('should resolve object without obj;s context', function (done) {
+            var doneSpy = sinon.spy();
+
+            dfd.done(doneSpy)
+                .always(function () {
+                    doneSpy.should.have.been.called;
+                    done();
+                });
+
+            setTimeout(dfd.resolve, 1);
+        });
     });
 
     describe('resolveWith', function () {
@@ -240,6 +252,18 @@ describe('$.Defered', function () {
 
             failSpy.should.have.been.calledOnce;
             failSpy.should.have.been.calledWith(reject1arg);
+        });
+
+        it('should reject object without obj;s context', function (done) {
+            var failSpy = sinon.spy();
+
+            dfd.fail(failSpy)
+                .always(function () {
+                    failSpy.should.have.been.called;
+                    done();
+                });
+
+            setTimeout(dfd.reject, 1);
         });
     });
 
@@ -334,6 +358,22 @@ describe('$.Defered', function () {
             dfd.notify();
 
             progressSpy.should.not.have.been.called;
+        });
+
+        it('should notify without obj;s context', function (done) {
+            var progressSpy = sinon.spy();
+
+            dfd
+                .progress(function () {
+                    progressSpy();
+                    dfd.resolve();
+                })
+                .always(function () {
+                    progressSpy.should.have.been.called;
+                    done();
+                });
+
+            setTimeout(dfd.notify, 1);
         });
     });
 
