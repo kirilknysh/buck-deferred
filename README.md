@@ -17,4 +17,4 @@ For easier usage it was decided to override current jQuery.Deffered implementati
 
 ## So what?
 Here're the results of performance test (could be found in *perf* directory). I can't be sure that my test covers all cases and **buck-deferred** is always better than jQuery.Deferred so any help in analysis is much appreciated.
-![alt text](https://raw.githubusercontent.com/kirilknysh/buck-deferred/master/perf/results.png "Performance test results")
+![alt text](https://raw.githubusercontent.com/kirilknysh/buck-deferred/master/perf/results-v0-3-0.png "Performance test results")
