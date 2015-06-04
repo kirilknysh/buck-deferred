@@ -665,6 +665,22 @@ describe('$.Defered', function () {
 
             failSpy.should.have.been.called;
         });
+
+        it('should support complex then chains', function () {
+            var dfd1 = new $.Deferred(),
+                result = { 'hero': 'Stan Lee' };
+
+            dfd.then(function () {
+                return dfd1.then(function () {
+                    return result;
+                });
+            }).done(function (arg) {
+                arg.should.be.equal(result);
+            });
+
+            dfd.resolve();
+            dfd1.resolve();
+        });
     });
 
 });

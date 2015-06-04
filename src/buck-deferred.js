@@ -143,7 +143,7 @@
             this.done(function () {
                 var result = fnDone.apply(this, arguments);
 
-                if (result instanceof $.Deferred) {
+                if (result instanceof $.Deferred || result instanceof Promise) {
                     result
                         .done(function() { thenDfd.resolveWith(null, arguments); })
                         .fail(function() { thenDfd.rejectWith(null, arguments); })
