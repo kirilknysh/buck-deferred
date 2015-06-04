@@ -1,4 +1,4 @@
-/* buck-deferred v0.2.0 [Distributed under MIT license] */
+/* buck-deferred v0.3.0 [Distributed under MIT license] */
 ;(function (global, $) {
     var
         /**
@@ -144,7 +144,7 @@
             this.done(function () {
                 var result = fnDone.apply(this, arguments);
 
-                if (result instanceof $.Deferred) {
+                if (result instanceof $.Deferred || result instanceof Promise) {
                     result
                         .done(function() { thenDfd.resolveWith(null, arguments); })
                         .fail(function() { thenDfd.rejectWith(null, arguments); })
@@ -183,7 +183,7 @@
             });
         }
 
-        return thenDfd._promise;
+        return thenDfd.promise();
     };
 
     /**
@@ -286,185 +286,178 @@
      * @class
      */
     $.Deferred = function (func) {
-        this._promise = new Promise();
+        if (!(this instanceof $.Deferred)) {
+            return new $.Deferred(func);
+        }
+
+        var _promise = new Promise(),
+            obj = this;
 
         if (typeof func === 'function') {
             func.call(this, this);
         }
-    };
 
-    /**
-     * Return the current state of the Deferred object.
-     * @function state
-     * @returns {STATE} State of the deferred.
-     */
-    $.Deferred.prototype.state = function () {
-        return this._promise.state();
-    };
+        /**
+         * Return the current state of the Deferred object.
+         * @function state
+         * @returns {STATE} State of the deferred.
+         */
+        this.state = function () {
+            return _promise.state();
+        };
+        /**
+         * Resolves current Deferred (positive scenario).
+         * @function resolve
+         * @param {Arguments} Arguments that will be passed to success callbacks.
+         * @returns {Deferred} The current Deferred.
+         */
+        this.resolve = function () {
+            return obj.resolveWith(_promise, arguments);
+        };
+        /**
+         * Resolves current Deferred (positive scenario).
+         * @function resolveWith
+         * @param {Object} [context] Context in scope of which success callbacks will be called.
+         * @param {Array} [args] Array of parameters that will be passed to success callbacks.
+         * @returns {Deferred} The current Deferred.
+         */
+        this.resolveWith = function (context, args) {
+            if (_promise._state !== STATE.PENDING) {
+                return obj;
+            }
 
-    /**
-     * Chains success, fail and (or) progress callbacks.
-     * @function then
-     * @param {Function} [fnDone] Success callback.
-     * @param {Function} [fnFail] Fail callback.
-     * @param {Function} [fnProgress] Progress callback.
-     * @returns {Promise} A new Promise.
-     */
-    $.Deferred.prototype.then = function (fnDone, fnFail, fnProgress) {
-        return this._promise.then.apply(this._promise, arguments);
-    };
+            _promise._state = STATE.RESOLVED;
+            _promise._resultContext = context || _promise;
+            _promise._resultArguments = copyToArray(args);
 
-    /**
-     * Add fail callback(-s).
-     * @function fail
-     * @param {Function|...Functions} Fail callbacks.
-     * @returns {Deferred} The current Deferred.
-     */
-    $.Deferred.prototype.fail = function (/* fns */) {
-        this._promise.fail.apply(this._promise, arguments);
+            sequentialCalls(_promise._resultContext, _promise._resultArguments,
+                _promise.successCallbacks);
 
-        return this;
-    };
+            return obj;
+        };
+        /**
+         * Rejects current Deferred (negative scenario).
+         * @function reject
+         * @param {Arguments} Arguments that will be passed to fail callbacks.
+         * @returns {Deferred} The current Deferred.
+         */
+        this.reject = function () {
+            return obj.rejectWith(_promise, arguments);
+        };
+        /**
+         * Rejects current Deferred (negative scenario).
+         * @function rejectWith
+         * @param {Object} [context] Context in scope of which fail callbacks will be called.
+         * @param {Array} [args] Array of parameters that will be passed to fail callbacks.
+         * @returns {Deferred} The current Deferred.
+         */
+        this.rejectWith = function (context, args) {
+             if (_promise._state !== STATE.PENDING) {
+                return obj;
+            }
 
-    /**
-     * Add always (success + fail) callback(-s).
-     * @function always
-     * @param {Function|...Functions} Always callbacks.
-     * @returns {Deferred} The current Deferred.
-     */
-    $.Deferred.prototype.always = function (/* fns */) {
-        this._promise.always.apply(this._promise, arguments);
+            _promise._state = STATE.REJECTED;
+            _promise._resultContext = context || _promise;
+            _promise._resultArguments = copyToArray(args);
 
-        return this;
-    };
+            sequentialCalls(_promise._resultContext, _promise._resultArguments,
+                _promise.failCallbacks);
 
-    /**
-     * Add success callback(-s).
-     * @function done
-     * @param {Function|...Functions} Success callbacks.
-     * @returns {Deferred} The current Deferred.
-     */
-    $.Deferred.prototype.done = function (/* fns */) {
-        this._promise.done.apply(this._promise, arguments);
+            return obj;
+         };
+         /**
+         * Notifies all progress-listeners.
+         * @function notify
+         * @param {Arguments} Arguments that will be passed to progress callbacks.
+         * @returns {Deferred} The current Deferred.
+         */
+        this.notify = function () {
+            return obj.notifyWith(_promise, arguments);
+        };
+        /**
+         * Notifies all progress-listeners.
+         * @function notifyWith
+         * @param {Object} [context] Context in scope of which progress callbacks will be called.
+         * @param {Array} [args] Array of parameters that will be passed to progress callbacks.
+         * @returns {Deferred} The current Deferred.
+         */
+        this.notifyWith = function (context, args) {
+            if (_promise.state() !== STATE.PENDING) {
+                return obj;
+            }
 
-        return this;
-    };
+            _promise._progressContext = context || _promise;
+            _promise._progressArguments = copyToArray(args);
 
-    /**
-     * Add progress callback(-s).
-     * @function progress
-     * @param {Function|...Functions} Progress callbacks.
-     * @returns {Deferred} The current Deferred.
-     */
-    $.Deferred.prototype.progress = function (/* fns */) {
-        this._promise.progress.apply(this._promise, arguments);
+            sequentialCalls(_promise._progressContext, _promise._progressArguments,
+                _promise.progressCallbacks);
 
-        return this;
-    };
+            return obj;
+        };
+        /**
+         * Chains success, fail and (or) progress callbacks.
+         * @function then
+         * @param {Function} [fnDone] Success callback.
+         * @param {Function} [fnFail] Fail callback.
+         * @param {Function} [fnProgress] Progress callback.
+         * @returns {Promise} A new Promise.
+         */
+        this.then = function (fnDone, fnFail, fnProgress) {
+            return _promise.then.apply(_promise, arguments);
+        };
+        /**
+         * Add success callback(-s).
+         * @function done
+         * @param {Function|...Functions} Success callbacks.
+         * @returns {Deferred} The current Deferred.
+         */
+        this.done = function (/* fns */) {
+            _promise.done.apply(_promise, arguments);
 
-    /**
-     * Resolves current Deferred (positive scenario).
-     * @function resolve
-     * @param {Arguments} Arguments that will be passed to success callbacks.
-     * @returns {Deferred} The current Deferred.
-     */
-    $.Deferred.prototype.resolve = function () {
-        return this.resolveWith(this._promise, arguments);
-    };
+            return obj;
+        };
+        /**
+         * Add fail callback(-s).
+         * @function fail
+         * @param {Function|...Functions} Fail callbacks.
+         * @returns {Deferred} The current Deferred.
+         */
+        this.fail = function (/* fns */) {
+            _promise.fail.apply(_promise, arguments);
 
-    /**
-     * Resolves current Deferred (positive scenario).
-     * @function resolveWith
-     * @param {Object} [context] Context in scope of which success callbacks will be called.
-     * @param {Array} [args] Array of parameters that will be passed to success callbacks.
-     * @returns {Deferred} The current Deferred.
-     */
-    $.Deferred.prototype.resolveWith = function (context, args) {
-        if (this._promise._state !== STATE.PENDING) {
-            return this;
-        }
+            return obj;
+        };
+        /**
+         * Add progress callback(-s).
+         * @function progress
+         * @param {Function|...Functions} Progress callbacks.
+         * @returns {Deferred} The current Deferred.
+         */
+        this.progress = function (/* fns */) {
+            _promise.progress.apply(_promise, arguments);
 
-        this._promise._state = STATE.RESOLVED;
-        this._promise._resultContext = context || this._promise;
-        this._promise._resultArguments = copyToArray(args);
+            return obj;
+        };
+        /**
+         * Add always (success + fail) callback(-s).
+         * @function always
+         * @param {Function|...Functions} Always callbacks.
+         * @returns {Deferred} The current Deferred.
+         */
+        this.always = function (/* fns */) {
+            _promise.always.apply(_promise, arguments);
 
-        sequentialCalls(this._promise._resultContext, this._promise._resultArguments,
-            this._promise.successCallbacks);
-
-        return this;
-    };
-
-    /**
-     * Rejects current Deferred (negative scenario).
-     * @function reject
-     * @param {Arguments} Arguments that will be passed to fail callbacks.
-     * @returns {Deferred} The current Deferred.
-     */
-    $.Deferred.prototype.reject = function () {
-        return this.rejectWith(this._promise, arguments);
-    };
-
-    /**
-     * Rejects current Deferred (negative scenario).
-     * @function rejectWith
-     * @param {Object} [context] Context in scope of which fail callbacks will be called.
-     * @param {Array} [args] Array of parameters that will be passed to fail callbacks.
-     * @returns {Deferred} The current Deferred.
-     */
-    $.Deferred.prototype.rejectWith = function (context, args) {
-        if (this._promise._state !== STATE.PENDING) {
-            return this;
-        }
-
-        this._promise._state = STATE.REJECTED;
-        this._promise._resultContext = context || this._promise;
-        this._promise._resultArguments = copyToArray(args);
-
-        sequentialCalls(this._promise._resultContext, this._promise._resultArguments,
-            this._promise.failCallbacks);
-
-        return this;
-    };
-
-    /**
-     * Notifies all progress-listeners.
-     * @function notify
-     * @param {Arguments} Arguments that will be passed to progress callbacks.
-     * @returns {Deferred} The current Deferred.
-     */
-    $.Deferred.prototype.notify = function () {
-        return this.notifyWith(this._promise, arguments);
-    };
-
-    /**
-     * Notifies all progress-listeners.
-     * @function notifyWith
-     * @param {Object} [context] Context in scope of which progress callbacks will be called.
-     * @param {Array} [args] Array of parameters that will be passed to progress callbacks.
-     * @returns {Deferred} The current Deferred.
-     */
-    $.Deferred.prototype.notifyWith = function (context, args) {
-        if (this._promise.state() !== STATE.PENDING) {
-            return this;
-        }
-
-        this._promise._progressContext = context || this._promise;
-        this._promise._progressArguments = copyToArray(args);
-
-        sequentialCalls(this._promise._progressContext, this._promise._progressArguments,
-            this._promise.progressCallbacks);
-
-        return this;
-    };
-
-    /**
-     * Returns Promise object linked to current Deferred or makes Promise from the passed object.
-     * @function promise
-     * @param {object} [obj] Object that wants to be a Promise.
-     * @returns {Promise} A new Promise.
-     */
-    $.Deferred.prototype.promise = function (obj) {
-        return this._promise.promise(obj);
+            return obj;
+        };
+        /**
+         * Returns Promise object linked to current Deferred or makes Promise from the passed object.
+         * @function promise
+         * @param {object} [obj] Object that wants to be a Promise.
+         * @returns {Promise} A new Promise.
+         */
+        this.promise = function (obj) {
+            return _promise.promise(obj);
+        };
     };
 
     $.when = function (/* dfds */) {
