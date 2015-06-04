@@ -285,6 +285,10 @@
      * @class
      */
     $.Deferred = function (func) {
+        if (!(this instanceof $.Deferred)) {
+            return new $.Deferred(func);
+        }
+
         this._promise = new Promise();
 
         if (typeof func === 'function') {

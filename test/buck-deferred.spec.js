@@ -43,6 +43,12 @@ describe('$.Defered', function () {
             spy.should.have.been.calledOn(funDfd);
             spy.should.have.been.calledWith(funDfd);
         });
+
+        it('should create Deferred object without new keyword', function () {
+            var dfd1 = $.Deferred();
+
+            isDeferred(dfd1);
+        });
     });
 
     describe('state', function () {
