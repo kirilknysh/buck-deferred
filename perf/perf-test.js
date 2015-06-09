@@ -1,6 +1,7 @@
 ;(function (global, $) {
-    function getPerfMeter () {
+    function getPerfMeter (objAmount) {
         var perfMeter = global.performance || global.Date,
+            _avg = {},
             startMark;
 
         return {
@@ -10,6 +11,32 @@
 
             finish: function () {
                 return perfMeter.now() - startMark;
+            },
+
+            avg: function (alias, value) {
+                if (!_avg[alias]) {
+                    _avg[alias] = [];
+                }
+                _avg[alias].push(value);
+
+                return value;
+            },
+
+            getPerfStats: function () {
+                var keys = Object.keys(_avg),
+                    i = 0, j = 0, sum = 0, result = {},
+                    values;
+
+                for (; i < keys.length; i++) {
+                    sum = 0;
+                    values = _avg[keys[i]];
+                    for (j = 0; j < values.length; j++) {
+                        sum += values[j];
+                    }
+                    result[keys[i]] = 1 / ((sum / values.length) / objAmount);
+                }
+
+                return result;
             }
         };
     }
@@ -39,7 +66,7 @@
     global.startPerfTest = function (results) {
         var objAmount = 9999;
 
-        meter = getPerfMeter();
+        meter = getPerfMeter(objAmount);
         logger = getLogger(results);
 
 
@@ -57,6 +84,7 @@
                         logger.log('------------------');
                          whenTest(objAmount, function () {
                             logger.log('finish');
+                            console.log(meter.getPerfStats());
                         });
                     });
                 });
@@ -72,7 +100,7 @@
         for (i = 0; i < amount; i++) {
             dfds.push(new $.Deferred());
         }
-        logger.log('create ' + amount + ' deferreds: ' + meter.finish());
+        logger.log('create ' + amount + ' deferreds: ' + meter.avg('create', meter.finish()));
 
         global.setTimeout(function() {
             if (typeof callback === 'function') {
@@ -88,7 +116,7 @@
         for (i = 0; i < l; i++) {
             dfds[i].done(doneFunc);
         }
-        logger.log('add done callbacks: ' + meter.finish());
+        logger.log('add done callbacks: ' + meter.avg('done-fail-progr', meter.finish()));
 
         global.setTimeout(function() {
             if (typeof callback === 'function') {
@@ -104,7 +132,7 @@
         for (i = 0; i < l; i++) {
             dfds[i].fail(doneFunc);
         }
-        logger.log('add fail callbacks: ' + meter.finish());
+        logger.log('add fail callbacks: ' + meter.avg('done-fail-progr', meter.finish()));
 
         global.setTimeout(function() {
             if (typeof callback === 'function') {
@@ -120,7 +148,7 @@
         for (i = 0; i < l; i++) {
             dfds[i].always(doneFunc);
         }
-        logger.log('add always callbacks: ' + meter.finish());
+        logger.log('add always callbacks: ' + meter.avg('always', meter.finish()));
 
         global.setTimeout(function() {
             if (typeof callback === 'function') {
@@ -136,7 +164,7 @@
         for (i = 0; i < l; i++) {
             dfds[i].then(doneFunc, failFunc, progressFunc);
         }
-        logger.log('add then callbacks: ' + meter.finish());
+        logger.log('add then callbacks: ' + meter.avg('then', meter.finish()));
 
         global.setTimeout(function() {
             if (typeof callback === 'function') {
@@ -150,7 +178,7 @@
 
         meter.start();
         $.when.apply($, dfds);
-        logger.log('set deferreds to $.when: ' + meter.finish());
+        logger.log('set deferreds to $.when: ' + meter.avg('when', meter.finish()));
 
         global.setTimeout(function() {
             if (typeof callback === 'function') {
@@ -166,7 +194,7 @@
         for (i = 0; i < l; i++) {
             dfds[i].resolve();
         }
-        logger.log('resolve deferreds: ' + meter.finish());
+        logger.log('resolve deferreds: ' + meter.avg('resolve', meter.finish()));
 
         global.setTimeout(function() {
             if (typeof callback === 'function') {
@@ -182,7 +210,7 @@
         for (i = 0; i < l; i++) {
             dfds[i].reject();
         }
-        logger.log('reject deferreds: ' + meter.finish());
+        logger.log('reject deferreds: ' + meter.avg('reject', meter.finish()));
 
         global.setTimeout(function() {
             if (typeof callback === 'function') {
@@ -217,7 +245,7 @@
         for (i = 0; i < l; i++) {
             dfds[i].notify();
         }
-        logger.log('notify deferreds: ' + meter.finish());
+        logger.log('notify deferreds: ' + meter.avg('notify', meter.finish()));
 
         global.setTimeout(function() {
             if (typeof callback === 'function') {
