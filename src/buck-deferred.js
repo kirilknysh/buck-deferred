@@ -139,48 +139,42 @@
     Promise.prototype.then = function (fnDone, fnFail, fnProgress) {
         var thenDfd = new $.Deferred();
 
-        if (typeof fnDone === 'function') {
-            this.done(function () {
-                var result = fnDone.apply(this, arguments);
+        this.done(function () {
+            var result = fnDone && fnDone.apply(this, arguments);
 
-                if (result instanceof $.Deferred || result instanceof Promise) {
-                    result
-                        .done(function() { thenDfd.resolveWith(null, arguments); })
-                        .fail(function() { thenDfd.rejectWith(null, arguments); })
-                        .progress(function() { thenDfd.notifyWith(null, arguments); });
-                } else {
-                    thenDfd.resolveWith(this, [result]);
-                }
-            });
-        }
-        if (typeof fnFail === 'function') {
-            this.fail(function () {
-                var result = fnFail.apply(this, arguments);
+            if (result instanceof $.Deferred || result instanceof Promise) {
+                result
+                    .done(function() { thenDfd.resolveWith(null, arguments); })
+                    .fail(function() { thenDfd.rejectWith(null, arguments); })
+                    .progress(function() { thenDfd.notifyWith(null, arguments); });
+            } else {
+                thenDfd.resolveWith(this, [result]);
+            }
+        });
+        this.fail(function () {
+            var result = fnFail.apply(this, arguments);
 
-                if (result instanceof $.Deferred) {
-                    result
-                        .done(function() { thenDfd.resolveWith(null, arguments);})
-                        .fail(function() { thenDfd.rejectWith(null, arguments); })
-                        .progress(function() { thenDfd.notifyWith(null, arguments); });
-                } else {
-                    thenDfd.rejectWith(this, [result]);
-                }
-            });
-        }
-        if (typeof fnProgress === 'function') {
-            this.progress(function () {
-                var result = fnProgress.apply(this, arguments);
+            if (result instanceof $.Deferred) {
+                result
+                    .done(function() { thenDfd.resolveWith(null, arguments);})
+                    .fail(function() { thenDfd.rejectWith(null, arguments); })
+                    .progress(function() { thenDfd.notifyWith(null, arguments); });
+            } else {
+                thenDfd.rejectWith(this, [result]);
+            }
+        });
+        this.progress(function () {
+            var result = fnProgress.apply(this, arguments);
 
-                if (result instanceof $.Deferred) {
-                    result
-                        .done(function() { thenDfd.resolveWith(null, arguments);})
-                        .fail(function() { thenDfd.rejectWith(null, arguments); })
-                        .progress(function() { thenDfd.notifyWith(null, arguments); });
-                } else {
-                    thenDfd.notifyWith(this, [result]);
-                }
-            });
-        }
+            if (result instanceof $.Deferred) {
+                result
+                    .done(function() { thenDfd.resolveWith(null, arguments);})
+                    .fail(function() { thenDfd.rejectWith(null, arguments); })
+                    .progress(function() { thenDfd.notifyWith(null, arguments); });
+            } else {
+                thenDfd.notifyWith(this, [result]);
+            }
+        });
 
         return thenDfd.promise();
     };
