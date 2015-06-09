@@ -721,6 +721,15 @@ describe('$.Defered', function () {
             dfd.resolve();
             dfd1.resolve();
         });
+
+        it('should ignore null-yfied callbacks', function () {
+            var doneSpy = sinon.spy();
+
+            dfd.then(null, function() { }).done(doneSpy);
+            dfd.resolve();
+
+            doneSpy.should.have.been.called;
+        });
     });
 
 });
