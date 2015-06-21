@@ -722,6 +722,32 @@ describe('$.Defered', function () {
             dfd1.resolve();
         });
 
+        it('should support complex then chains 2', function () {
+            var dfd1 = new $.Deferred(),
+                dfd2 = new $.Deferred(),
+                result = { 'hero': 'Stan Lee' },
+                dfdDone = sinon.spy(),
+                dfdDone1 = sinon.spy();
+
+            dfd
+                .done(dfdDone)
+                .then(function () {
+                    return dfd1
+                        .done(dfdDone1)
+                        .then(function () {
+                            return dfd2;
+                        });
+                }).done(function (arg) {
+                    arg.should.be.equal(result);
+                    dfdDone.should.have.been.called;
+                    dfdDone1.should.have.been.called;
+                });
+
+            dfd.resolve();
+            dfd2.resolveWith(dfd2, [result]);
+            dfd1.resolve();
+        });
+
         it('should ignore null-yfied callbacks', function () {
             var doneSpy = sinon.spy();
 
