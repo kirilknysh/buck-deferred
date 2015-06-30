@@ -1,4 +1,4 @@
-/* buck-deferred v0.3.0 [Distributed under MIT license] */
+/* buck-deferred v0.4.0 [Distributed under MIT license] */
 ;(function (global, $) {
     var
         /**
@@ -140,48 +140,42 @@
     Promise.prototype.then = function (fnDone, fnFail, fnProgress) {
         var thenDfd = new $.Deferred();
 
-        if (typeof fnDone === 'function') {
-            this.done(function () {
-                var result = fnDone.apply(this, arguments);
+        this.done(function () {
+            var result = fnDone && fnDone.apply(this, arguments);
 
-                if (result instanceof $.Deferred || result instanceof Promise) {
-                    result
-                        .done(function() { thenDfd.resolveWith(null, arguments); })
-                        .fail(function() { thenDfd.rejectWith(null, arguments); })
-                        .progress(function() { thenDfd.notifyWith(null, arguments); });
-                } else {
-                    thenDfd.resolveWith(this, [result]);
-                }
-            });
-        }
-        if (typeof fnFail === 'function') {
-            this.fail(function () {
-                var result = fnFail.apply(this, arguments);
+            if (result instanceof $.Deferred || result instanceof Promise) {
+                result
+                    .done(function() { thenDfd.resolveWith(null, arguments); })
+                    .fail(function() { thenDfd.rejectWith(null, arguments); })
+                    .progress(function() { thenDfd.notifyWith(null, arguments); });
+            } else {
+                thenDfd.resolveWith(this, [result]);
+            }
+        });
+        this.fail(function () {
+            var result = fnFail.apply(this, arguments);
 
-                if (result instanceof $.Deferred) {
-                    result
-                        .done(function() { thenDfd.resolveWith(null, arguments);})
-                        .fail(function() { thenDfd.rejectWith(null, arguments); })
-                        .progress(function() { thenDfd.notifyWith(null, arguments); });
-                } else {
-                    thenDfd.rejectWith(this, [result]);
-                }
-            });
-        }
-        if (typeof fnProgress === 'function') {
-            this.progress(function () {
-                var result = fnProgress.apply(this, arguments);
+            if (result instanceof $.Deferred) {
+                result
+                    .done(function() { thenDfd.resolveWith(null, arguments);})
+                    .fail(function() { thenDfd.rejectWith(null, arguments); })
+                    .progress(function() { thenDfd.notifyWith(null, arguments); });
+            } else {
+                thenDfd.rejectWith(this, [result]);
+            }
+        });
+        this.progress(function () {
+            var result = fnProgress.apply(this, arguments);
 
-                if (result instanceof $.Deferred) {
-                    result
-                        .done(function() { thenDfd.resolveWith(null, arguments);})
-                        .fail(function() { thenDfd.rejectWith(null, arguments); })
-                        .progress(function() { thenDfd.notifyWith(null, arguments); });
-                } else {
-                    thenDfd.notifyWith(this, [result]);
-                }
-            });
-        }
+            if (result instanceof $.Deferred) {
+                result
+                    .done(function() { thenDfd.resolveWith(null, arguments);})
+                    .fail(function() { thenDfd.rejectWith(null, arguments); })
+                    .progress(function() { thenDfd.notifyWith(null, arguments); });
+            } else {
+                thenDfd.notifyWith(this, [result]);
+            }
+        });
 
         return thenDfd.promise();
     };
@@ -292,10 +286,6 @@
 
         var _promise = new Promise(),
             obj = this;
-
-        if (typeof func === 'function') {
-            func.call(this, this);
-        }
 
         /**
          * Return the current state of the Deferred object.
@@ -458,6 +448,10 @@
         this.promise = function (obj) {
             return _promise.promise(obj);
         };
+
+        if (typeof func === 'function') {
+            func.call(this, this);
+        }
     };
 
     $.when = function (/* dfds */) {
