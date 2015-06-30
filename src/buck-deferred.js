@@ -286,10 +286,6 @@
         var _promise = new Promise(),
             obj = this;
 
-        if (typeof func === 'function') {
-            func.call(this, this);
-        }
-
         /**
          * Return the current state of the Deferred object.
          * @function state
@@ -451,6 +447,10 @@
         this.promise = function (obj) {
             return _promise.promise(obj);
         };
+
+        if (typeof func === 'function') {
+            func.call(this, this);
+        }
     };
 
     $.when = function (/* dfds */) {
