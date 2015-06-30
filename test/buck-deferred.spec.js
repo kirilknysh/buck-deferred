@@ -44,6 +44,12 @@ describe('$.Defered', function () {
             spy.should.have.been.calledWith(funDfd);
         });
 
+        it('should call passed function and pass a newly created Deferred there', function () {
+            var funDfd = new $.Deferred(function (dfd) {
+                    isDeferred(dfd);
+                });
+        });
+
         it('should create Deferred object without new keyword', function () {
             var dfd1 = $.Deferred();
 
